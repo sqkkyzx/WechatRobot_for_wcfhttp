@@ -15,6 +15,8 @@ import time
 
 import openai
 
+from sendqueue import QueueDB
+
 from function.nowtime import nowtime
 from function import auto_factory
 
@@ -24,7 +26,7 @@ from function import auto_factory
 # 自动函数执行的 function 需要在 auto_factory 中导入
 # 编写的用于自动执行的函数，变量必须携带 record，即使不使用。
 
-def auto(record):
+async def auto(record):
     with open('config.json') as f:
         conf = json.load(f)
 
@@ -35,6 +37,8 @@ def auto(record):
 
     while len(str(history)) > 2000:
         history.pop(0)
+        if history is None:
+            history = []
 
     # 2. 使用聊天记录构建提示词
     messages: list = history + [{"role": "user", "content": record.content}]
@@ -61,15 +65,15 @@ def auto(record):
         # 6-1.2 执行函数获取返回值。
         try:
             func_call = getattr(auto_factory, func_name)
-            print(f"{func_call} + {func_args}")
-            func_response = func_call(**func_args)
+            print(f"DO FUNC: {func_name} \n ARGS: {func_args}")
+            func_response = await func_call(**func_args)
             func_response = json.dumps(func_response, ensure_ascii=False) \
                 if isinstance(func_response, (dict, list)) else func_response
         except Exception as e:
             func_response = str(e).split("\n")[-1]
             func_response = f"错误信息：{func_response}。如果你觉得没有问题，请重新提交一次试试看吧！"
 
-        # 6-1.3 如果有返回，则通过GPT扩展对话，然后返回自然语言的回复。
+        # 6-1.3 如果有返回，则通过GPT扩展对话，然后输出自然语言的回复。
         if func_response:
             messages.append(response)
             messages.append({
@@ -97,7 +101,15 @@ def auto(record):
             messages.append(second_response["choices"][0]["message"])
             with HistoryDB() as db:
                 db.insert(record, messages)
-            return reply
+
+            # 回复消息
+            with QueueDB() as mq:
+                mq.send_text(
+                    reply,
+                    record.roomid,
+                    record.sender
+                )
+
         else:
             messages.append({
                 "role": "function",
@@ -106,11 +118,11 @@ def auto(record):
             })
             with HistoryDB() as db:
                 db.insert(record, messages)
-            return None
 
     # 6-2. 如果GPT不准备调用函数，则使用聊天模式。
     else:
         try:
+            print(f"DO FUNC: CHAT WITH GPT-3.5-TURBO")
             chat_response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=messages
@@ -119,10 +131,23 @@ def auto(record):
             messages.append(chat_response["choices"][0]["message"])
             with HistoryDB() as db:
                 db.insert(record, messages)
-            return reply
+            # 回复消息
+            with QueueDB() as mq:
+                mq.send_text(
+                    reply,
+                    record.roomid,
+                    record.sender
+                )
+
         except Exception as e:
             logging.error(e)
-            return "程序故障。"
+            # 回复消息
+            with QueueDB() as mq:
+                mq.send_text(
+                    '程序故障',
+                    record.roomid,
+                    record.sender
+                )
 
 
 class HistoryDB:
@@ -166,7 +191,7 @@ class HistoryDB:
         people = "|".join([record.sender, record.roomid])
         self.__cursor__.execute("SELECT history FROM history WHERE people=?", (people,))
         result = self.__cursor__.fetchone()
-        row = result[0] if result else []
+        row = json.loads(result[0]) if result else []
         return row
 
     def __clean_history__(self, timeout: int):

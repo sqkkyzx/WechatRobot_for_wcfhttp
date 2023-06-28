@@ -3,21 +3,38 @@ import json
 import logging
 import random
 import re
+import os
+import shutil
 
 import uvicorn
 from fastapi import FastAPI, Request
 
+import function
 from message import Record
 from sendqueue import QueueDB
-import function
+
+
+def check_config():
+    current_dir = os.getcwd()
+    config_file = "config.json"
+    example_file = "config.example"
+
+    # 检查是否存在 config.json 文件
+    if not os.path.isfile(os.path.join(current_dir, config_file)):
+        shutil.copy(os.path.join(current_dir, example_file), os.path.join(current_dir, config_file))
+
+    with open('config.json', 'r', encoding='utf-8') as f:
+        conf = json.load(f)
+
+    return conf
+
+
+# 调用函数检测并复制配置文件
+config = check_config()
+wcf, timer, random_timer = config['wcfhttpUrl'], config['queueTimer'], tuple(config['queueTimerRandom'])
 
 app = FastAPI()
 
-with open('config.json', 'r', encoding='utf-8') as conf:
-    config = json.load(conf)
-    wcf = config['wcfhttpUrl']
-    timer = config['queueTimer']
-    random_timer = tuple(config['queueTimerRandom'])
 
 if __name__ == '__main__':
     uvicorn.run('main:app', host="0.0.0.0", port=9998, reload=True)
@@ -69,7 +86,7 @@ async def root(request: Request):
         func = getattr(function, funcname, None)
 
         if func:
-            logging.info(f"Try Runing {funcname}")
+            print(f"DO FUNC: {funcname}")
             asyncio.create_task(func(record))
         else:
             logging.error('无法执行未配置的函数。')

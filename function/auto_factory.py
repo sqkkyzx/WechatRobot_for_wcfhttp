@@ -1,5 +1,5 @@
 # 需要引入使用的函数
-from function.nowtime import nowtime as query_nowtime
+from function.nowtime import auto_nowtime as query_nowtime
 from function.weather import auto_weather as query_weather
 
 # 编辑 functions

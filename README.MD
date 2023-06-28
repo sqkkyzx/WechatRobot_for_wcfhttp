@@ -10,12 +10,14 @@
 
 ## 启动
 
-```python
-# 升级 pip
+```commandline
+升级 pip
 python -m pip install -U pip
-# 安装必要依赖
+
+安装必要依赖
 python -m pip install -r requirements.txt
-# 启动
+
+启动
 python main.py
 ```
 
@@ -92,8 +94,8 @@ python main.py
 # 引入内置的队列模块
 from sendqueue import QueueDB
 
-# 函数参数必须为 record ，用于接受消息对象实例。
-def repeater(record):
+# 函数参数必须为 record ，用于接受消息对象实例，需要以 async 模式定义函数
+async def repeater(record):
     
     # 函数不处理返回，可以使用 http 请求 或 内置的队列 来发送回复。
     with QueueDB() as mq:
@@ -141,12 +143,21 @@ with QueueDB() as mq:
 2、编辑 `auto_factory.py` ，在顶部引入备选函数。 
 
 ```python
-from function.repeater import auto_repeater
+from function.weather import auto_weather as query_weacher
 ```
 3、定义函数。
 
-与直接触发的函数不同地方在于，除了 `record` 参数，还需要自定义其他需要通过 gpt 解析得到的参数。
+- 与直接触发的函数不同地方在于，除了 `record` 参数，还需要传入其他需要通过 gpt 解析得到的参数。
 
-同时，需要一个返回值，以便于 gpt 根据返回值进行处理，最终生成自然语言的回复。
 
-请自行参考 `weather.py` 和 `auto_factory.py` 中的实现。
+- 需要一个返回值，以便于 gpt 根据返回值进行处理，最终生成自然语言的回复。
+
+
+- 函数同样需要以 `async` 模式定义
+
+
+- 在引入函数时，建议使用 `as` 重命名函数名称，说明函数具体的功能，并符合良好的蛇形或驼峰命名规则。
+一个精准、明确的函数名，有利于 gpt 更准确的识别函数功能。
+
+
+- 请自行参考 `weather.py` 和 `auto_factory.py` 中的实现。

@@ -1,14 +1,6 @@
 [
   {
-    "blacklist": "黑名单，写入wxid即可，在此内的wxid不会触发任何任务",
-    "whitelist": "白名单，如果留空字符串，则匹配全部发送人。如果填入字符，则只会匹配白名单内的 wxid",
-    "reply": "需要回复的纯文本消息",
-    "func_name": "需要执行的函数。具体说明见function文件夹内__init__.py",
-    "pattern": "需要消息匹配的正则表达式",
-    "need_at": "是否需要被@。"
-  },
-  {
-    "blacklist": "示例1：",
+    "blacklist": "示例1：发送测试回复运行中，测试请先修改白名单",
     "whitelist": "wxid_jswzjbs49a8r22",
     "reply": "运行中",
     "func_name": "",
@@ -16,11 +8,19 @@
     "need_at": false
   },
   {
-    "blacklist": "示例2：",
+    "blacklist": "示例2：发送时间回复当前时间，测试请先修改白名单",
     "whitelist": "wxid_jswzjbs49a8r22",
     "reply": "",
     "func_name": "nowtime",
     "pattern": "^时间$",
     "need_at": false
+  },
+  {
+    "blacklist": "示例3：gpt自动回复和函数判定",
+    "whitelist": "",
+    "reply": "",
+    "func_name": "auto",
+    "pattern": "",
+    "need_at": true
   }
 ]
