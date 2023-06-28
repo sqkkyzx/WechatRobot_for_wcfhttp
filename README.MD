@@ -22,21 +22,21 @@ python main.py
 
 ## 配置文件
 
-```python
-    {    
-    # wcfhttp 的地址，用于发送消息。结尾必须以 / 结束
-      "wcfhttpUrl": "http://127.0.0.1:9999/",    
-    
-    # 参考后文使用队列
-      "queueTimer": 5,
-      "queueTimerRandom": [1,5],
-    
-    # GPT 的上下文超时时间，单位秒。超过此时间后，将会删除数据库中存储的上下文。
-      "histroyTimeout": 360000,
-    
-    # GPT的 apikey
-      "openaiKey": ""
-    }
+```json
+{
+  // wcfhttp 的地址，用于发送消息。结尾必须以 / 结束
+  "wcfhttpUrl": "http://127.0.0.1:9999/", 
+  
+  // 参考后文: 使用队列
+  "queueTimer": 5,
+  "queueTimerRandom": [1,5],
+  
+  // GPT 的上下文超时时间，单位秒。超过此时间后，将会删除数据库中存储的上下文。
+  "histroyTimeout": 360000,
+  
+  //GPT的 apikey
+  "openaiKey": "",
+}
 ```
 
 
@@ -49,7 +49,7 @@ python main.py
 
 在 `tigger.json` 中，可以编写自己的触发逻辑。
 
-```
+```json
 // 一个触发逻辑的列表， 黑名单、白名单、消息正则、是否被@ 四个条件均满足时，才会触发执行。
 // 将从上到下依次遍历列表的每一项进行匹配。
 // 匹配成功后，如果 reply 不为空，将立即推送一条文本消息回复
@@ -97,7 +97,7 @@ python main.py
 示例：添加一个函数，回复自己发送的内容。
 
 在 `function` 模块文件夹中，添加 `repeater.py` 文件
-```
+```python
 # 引入内置的队列模块
 from sendqueue import QueueDB
 
@@ -111,7 +111,7 @@ def repeater(record):
     return 
 ```
 然后需要在 `__init__.py` 中引入函数。
-```
+```python
 # 在开头引入函数
 from repeater.py import repeater
 ```
