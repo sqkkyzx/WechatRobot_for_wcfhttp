@@ -1,0 +1,5 @@
+uvicorn
+fastapi
+requests
+openai
+xmltodict~=0.13.0

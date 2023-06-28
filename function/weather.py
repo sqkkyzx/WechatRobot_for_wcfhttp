@@ -2,7 +2,7 @@ import requests
 import time
 
 
-def weather(city: str, record):
+def auto_weather(city: str, record):
     try:
         res = requests.get(
             url=f"https://api.seniverse.com/v3/weather/daily.json?key=SCYrvkytJze9qyzOh&location={city}"
