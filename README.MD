@@ -14,7 +14,7 @@
 # 升级 pip
 python -m pip install -U pip
 # 安装必要依赖
-python -m pip install pip install -r requirements.txt
+python -m pip install -r requirements.txt
 # 启动
 python main.py
 ```
@@ -56,33 +56,27 @@ python main.py
 [
   {
     # 黑名单：
-    # 将 roomid 写入后，任何命中黑名单的 roomid 都不会触发自动回复。roomid 可以以任意分隔符写入
-    
+    # 将 roomid 写入后，任何命中黑名单的 roomid 都不会触发自动回复。roomid 可以以任意分隔符写入    
     "blacklist": "xx1xx@chatrooom/xx2xx@chatrooom|xx3xx@chatrooom",
     
     # 白名单：
     # 留空时，将会所有人都可以触发
-    # 不为空时，只有在白名单内的 roomid 才会触发。roomid 可以以任意分隔符写入
-    
+    # 不为空时，只有在白名单内的 roomid 才会触发。roomid 可以以任意分隔符写入    
     "whitelist": "xx0xx@chatrooom",
     
     # 正则表达式:
     # 填写正则表达式，消息文本 content 匹配正则时，才会触发。可以匹配多行
-    # 可以使用 .* 匹配包括空值的任意字符串
-    
+    # 可以使用 .* 匹配包括空值的任意字符串    
     "pattern": ".+",
     
     # 是否需要被@:
-    # 留空时视为 False, 填写任意值均被视为 True。当为 True 时，只有被@以后才能触发
-    
+    # 留空时视为 False, 填写任意值均被视为 True。当为 True 时，只有被@以后才能触发    
     "need_at": "",    
     
-    # 需要回复的文本消息
-    
+    # 需要回复的文本消息    
     "reply": "",
     
-    # 需要执行的函数名，仅函数名称，无需参数和括弧
-    
+    # 需要执行的函数名，仅函数名称，无需参数和括弧    
     "func_name": ""
   }
 ]
