@@ -1,0 +1,11 @@
+{
+  "wcfhttpUrl": "http://127.0.0.1:9999/",
+  "说明 wcfhttpUrl": "wcfhttp 的 url，末尾必须带 /",
+  "queueTimer": 5,
+  "说明 queueTimer": "消息队列的固定时间间隔",
+  "queueTimerRandom": [1,5],
+  "说明 queueTimerRandom": "消息队列的随机时间间隔",
+  "histroyTimeout": 3600,
+  "说明 histroyTimeout": "聊天历史记录的超时清除秒数",
+  "openaiKey": ""
+}
