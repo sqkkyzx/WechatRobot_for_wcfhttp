@@ -134,30 +134,76 @@ with QueueDB() as mq:
 
 ## gpt-3.5-turbo-0613 自动选择函数
 
-> **⚠** 该模块在此项目的实现尚未经过测试
+> **⚠** 使用 AUTO 模式需要能够请求 gpt-3.5-turbo-0613 的 apikey
 
+### 1. 如何启用
 
+设置 `tigger.json` 的 `func_name` 设置为 `auto`
 
-1、`tigger.json` 的 `func_name` 字段设置为 `auto`
+在 `config.json` 中设置你的 `openaiKey`
 
-2、编辑 `auto_factory.py` ，在顶部引入备选函数。 
+### 2. 定义自己的函数逻辑
+
+添加一个新的文件 `weather.py`
 
 ```python
+import requests
+import time
+
+# 需要根据你传入其他需要通过 gpt 解析得到的参数，如 city。
+# record 参数是必须的，无论是否使用。
+# 函数同样需要使用 async 模式
+async def auto_weather(city: str, record):
+    try:
+        # 进行一个 API 请求
+        res = requests.get(
+            url=f"https://api.seniverse.com/v3/weather/daily.json?key=SCYrvkytJze9qyzOh&location={city}"
+        ).json().get("results")[0].get("daily")
+        
+        # 对请求结果做出修改。
+        res[0]["date"] = "今天 " + time.strftime('%Y-%m-%d', time.localtime())
+        res[1]["date"] = "明天 " + time.strftime('%Y-%m-%d', time.localtime(time.time()+86400))
+        res[2]["date"] = "后天 " + time.strftime('%Y-%m-%d', time.localtime(time.time()+172800))
+        
+        # 需要一个返回值，以便于 gpt 根据返回值进行处理，最终生成自然语言的回复。
+        # 返回值必须是 dict 类型（包含字典的 list 也可以）或 str 类型，其他类
+        # 型的返回未进行处理，如若需要，请自行修改 __init__.py 的 70-71行
+        return res
+    
+    except Exception as e:
+        # 或者返回错误的结尾 80 个字符，让 gpt 识别有哪些错误，并回复用户。
+        # 常见用例是识别参数缺失。gpt 可以识别有哪些缺少的参数，并在回复内容中要求用户提供。
+        return '...' + e.__str__()[-80:]
+```
+
+编辑 `auto_factory.py` ，在顶部引入备选函数。 
+
+```python
+# 在引入函数时，建议使用 `as` 重命名函数名称，说明函数具体的功能，并符合良好的蛇形或驼峰命名规则。
+# 一个精准、明确的函数名，有利于 gpt 更准确的识别函数功能。
+
 from function.weather import auto_weather as query_weacher
 ```
-3、定义函数。
 
-- 与直接触发的函数不同地方在于，除了 `record` 参数，还需要传入其他需要通过 gpt 解析得到的参数。
+编辑 `auto_factory.py` 的 `functions` 变量。该变量是提供给 gpt 的可用函数列表。
 
-
-- 需要一个返回值，以便于 gpt 根据返回值进行处理，最终生成自然语言的回复。
-
-
-- 函数同样需要以 `async` 模式定义
-
-
-- 在引入函数时，建议使用 `as` 重命名函数名称，说明函数具体的功能，并符合良好的蛇形或驼峰命名规则。
-一个精准、明确的函数名，有利于 gpt 更准确的识别函数功能。
-
-
-- 请自行参考 `weather.py` 和 `auto_factory.py` 中的实现。
+```python
+# 应该是一个列表
+functions = [    
+  {
+    "name": "query_weather",    # 定义函数名，需要与引入的函数名相同
+    "description": "Query weather.",    # 描述函数功能
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "city": {   # 定义参数名，参数名与函数同样要求以蛇形或驼峰命名，gpt 才能更精准识别。
+          "type": "string",     # 设置参数的类型，可以是类型的列表，常用有 string, null, boolean, array, number
+          "description": "Witch city wants to search."      # 描述参数。
+          # "enum": ["北京", "上海" ...]    # 枚举值，gpt 会尽可能匹配。但若输入文本识别不到枚举的内容，也可能输入其他值。
+        }
+      },
+      "required": []   # 可以留空，看起来填写的内容对结果并无影响。
+    }
+  }
+]
+```
