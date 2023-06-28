@@ -42,7 +42,6 @@ python main.py
 
 ## 实现自己的回复逻辑
 
----
 
 ### 1. 编辑触发逻辑
 
@@ -90,7 +89,6 @@ python main.py
 ]
 ```
 
----
 
 ### 2. 添加函数
 
@@ -118,7 +116,7 @@ from repeater.py import repeater
 
 现在，你在 `tigger.json` 中，`func_name` 字段填写的 `repeater` 函数就可以被正确执行了。
 
----
+
 
 ## 内置队列的使用
 内置队列读取 `config.json` 中的 `queueTimer` 字段作为固定间隔秒数，`queueTimerRandom` 字段作为随机增加的时间间隔。
@@ -137,7 +135,7 @@ with QueueDB() as mq:
     mq.send_image()
 ```
 
----
+
 
 ## gpt-3.5-turbo-0613 自动选择函数
 
