@@ -9,11 +9,22 @@
 - [WeChatRobot](https://github.com/lich0821/WeChatRobot)
 
 ## 启动
+该程序与 `wcfhttp` 通信，用于处理 `wcfhttp` 的 callback ，不能独立运行，但是可以将本项目部署在任意 linux 服务器、docker 上，与
+运行 Wechat 的 PC 分离。
+
+先在 PC 启动 `wcfhttp` ，参数中携带本项目运行的 ip 和端口, 默认端口是 9998
 
 ```commandline
-升级 pip
-python -m pip install -U pip
+下载 wcfhttp
+python -m pip install wcfhttp
 
+运行 wcfhttp
+wcfhttp -cb http://127.0.0.1:9998/
+```
+
+拉取本项目，安装依赖，在 `config.json` 中配置 `wcfhttpURL` 为 `wcfhttp` 运行的 ip 和端口地址。
+
+```commandline
 安装必要依赖
 python -m pip install -r requirements.txt
 

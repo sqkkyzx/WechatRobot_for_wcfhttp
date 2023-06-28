@@ -67,7 +67,8 @@ async def root(request: Request):
     body = await request.json()
     record = Record(body)
     print(record.__dict__)
-
+    if record.type == 495:
+        print(body)
     # 消息类型：
     # 1-文本 3-图片 34-语音 42-个人或公众号名片 42-企业微信名片 43-视频 47-动画表情 48-定位 10000-系统提示
     # 49-应用 4957-引用 493-音乐 495-网页链接 496-文件 4916-卡券 4919-聊天记录 4933-小程序 492000-转账

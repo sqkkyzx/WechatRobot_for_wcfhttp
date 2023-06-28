@@ -4,10 +4,15 @@ import sqlite3
 import time
 import requests
 
-
 with open('config.json', 'r', encoding='utf-8') as conf:
     config = json.load(conf)
     wcf = config['wcfhttpUrl']
+
+try:
+    selfwxid = requests.get("http://127.0.0.1:9999/wxid").json()['data']['wxid']
+except Exception as e:
+    selfwxid = None
+    raise Exception("请检查 wcfhttp 是否启动。")
 
 
 class QueueDB:
@@ -120,3 +125,42 @@ class QueueDB:
             "receiver": receiver,
         }
         self.__produce__(data, wcf + 'emotion', producer)
+
+    def send_webview(self, title: str, des: str, url: str, thumburl: str, receiver: str, producer: str = "main"):
+        """
+        :param title: 卡片标题
+        :param des: 卡片简介
+        :param url: 卡片URL
+        :param thumburl: 卡片缩略图URL
+        :param receiver: 接收者
+        :param producer: 发送者标识符，可随意填写
+        :return:
+        """
+        data = {
+            "receiver": receiver,
+            "xml": f'<msg><appmsg><title>{title}</title><des>{des}</des><type>5</type><url>{url}</url>'
+                   f'<thumburl>{thumburl}</thumburl></appmsg><fromusername>{selfwxid}</fromusername></msg>'
+        }
+        self.__produce__(data, wcf + 'xml', producer)
+
+    def send_refer(
+            self, msg: str, refer_content: str, refer_wxid: str, refer_nick: str, receiver: str, producer: str = "main"
+    ):
+        """
+        :param msg: 文本消息
+        :param refer_content: 被引用的文本内容
+        :param refer_wxid: 被引用者的wxid
+        :param refer_nick: 被引用者的昵称，可随意填写
+        :param receiver: 接收者
+        :param producer: 发送者标识符，可随意填写
+        :return:
+        """
+        data = {
+            "receiver": receiver,
+            "xml": f"<msg><appmsg><title>{msg}</title><type>57</type><refermsg><type>1</type>"
+                   f"<fromusr>{refer_wxid}</fromusr><chatusr>{selfwxid}</chatusr>"
+                   f"<displayname>{refer_nick}</displayname>"
+                   f"<content>{refer_content}</content>"
+                   f"</refermsg></appmsg><fromusername>{selfwxid}</fromusername></msg>"
+        }
+        self.__produce__(data, wcf + 'xml', producer)
