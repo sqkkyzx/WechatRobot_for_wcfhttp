@@ -56,7 +56,7 @@ async def root(request: Request):
     # 49-应用 4957-引用 493-音乐 495-网页链接 496-文件 4916-卡券 4919-聊天记录 4933-小程序 492000-转账
 
     # 自动回复匹配
-    reply, funcname = tigger(record.roomid, record.content)
+    reply, funcname = tigger(record.roomid, record.content, record.is_at)
 
     # 如果匹配到 reply 则自动回复
     if reply:
@@ -76,14 +76,14 @@ async def root(request: Request):
 
 
 # 匹配消息
-def tigger(roomid, content):
+def tigger(roomid, content, is_at):
     with open('tigger.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     # 对每一条记录，检查它是否符合条件
     for record in data:
         # 如果需要at自己，但是没有at，则跳过
-        if record['need_at'] and not record.is_at:
+        if record['need_at'] and not is_at:
             continue
         # 如果命中黑名单，则跳过
         if roomid in record['blacklist']:
