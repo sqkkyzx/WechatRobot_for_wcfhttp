@@ -24,6 +24,7 @@ wcfhttp -cb http://127.0.0.1:9998/
 
 拉取本项目，安装依赖，在 `config.json` 中配置 `wcfhttpURL` 为 `wcfhttp` 运行的 ip 和端口地址。
 
+
 ```commandline
 安装必要依赖
 python -m pip install -r requirements.txt
