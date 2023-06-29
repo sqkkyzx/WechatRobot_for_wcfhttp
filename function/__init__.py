@@ -63,15 +63,14 @@ async def auto(record):
         func_args["record"] = record
 
         # 6-1.2 执行函数获取返回值。
-        try:
-            func_call = getattr(auto_factory, func_name)
-            print(f"DO FUNC: {func_name} \n ARGS: {func_args}")
-            func_response = await func_call(**func_args)
-            func_response = json.dumps(func_response, ensure_ascii=False) \
-                if isinstance(func_response, (dict, list)) else func_response
-        except Exception as e:
-            func_response = str(e).split("\n")[-1]
-            func_response = f"错误信息：{func_response}。如果你觉得没有问题，请重新提交一次试试看吧！"
+        func_call = getattr(auto_factory, func_name)
+        print(f"DO FUNC: {func_name} \nARGS: {func_args}")
+        func_response = func_call(**func_args)
+
+        if isinstance(func_response, (dict, list)):
+            func_response = json.dumps(func_response, ensure_ascii=False)
+
+        print(f"RESPONSE: {func_response}")
 
         # 6-1.3 如果有返回，则通过GPT扩展对话，然后输出自然语言的回复。
         if func_response:
@@ -96,6 +95,7 @@ async def auto(record):
                 model="gpt-3.5-turbo-0613",
                 messages=messages
             )
+
             reply = second_response.choices[0].message.content
 
             messages.append(second_response["choices"][0]["message"])
@@ -109,15 +109,7 @@ async def auto(record):
                     record.roomid,
                     record.sender
                 )
-
-        else:
-            messages.append({
-                "role": "function",
-                "name": func_name,
-                "content": "success."
-            })
-            with HistoryDB() as db:
-                db.insert(record, messages)
+        # 6-1.4 如果返回为空停止则停止对话。
 
     # 6-2. 如果GPT不准备调用函数，则使用聊天模式。
     else:
@@ -148,6 +140,7 @@ async def auto(record):
                     record.roomid,
                     record.sender
                 )
+        return
 
 
 class HistoryDB:

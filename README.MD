@@ -175,7 +175,6 @@ import time
 
 # 需要根据你传入其他需要通过 gpt 解析得到的参数，如 city。
 # record 参数是必须的，无论是否使用。
-# 函数同样需要使用 async 模式
 async def auto_weather(city: str, record):
     try:
         # 进行一个 API 请求
@@ -197,6 +196,9 @@ async def auto_weather(city: str, record):
         # 或者返回错误的结尾 80 个字符，让 gpt 识别有哪些错误，并回复用户。
         # 常见用例是识别参数缺失。gpt 可以识别有哪些缺少的参数，并在回复内容中要求用户提供。
         return '...' + e.__str__()[-80:]
+    
+    # 注意：
+    # 可以使用 retrun None 或者 return 0 返回空值，则 gpt 不会对结果进行再次对话。
 ```
 
 ### 3. 引入自己的函数
