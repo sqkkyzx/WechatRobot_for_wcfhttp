@@ -1,7 +1,0 @@
-{
-  "wcfhttpUrl": "http://127.0.0.1:9999/",
-  "queueTimer": 5,
-  "queueTimerRandom": [1,5],
-  "histroyTimeout": 3600,
-  "openaiKey": ""
-}
