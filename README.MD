@@ -114,7 +114,7 @@ python main.py
 # 引入内置的队列模块
 from sendqueue import QueueDB
 
-# 函数参数必须为 record ，用于接受消息对象实例，需要以 async 模式定义函数
+# 函数参数必须为 record ，用于接受消息对象实例，需要使用 async
 async def repeater(record):
     
     # 函数不处理返回，可以使用 http 请求 或 内置的队列 来发送回复。
@@ -175,6 +175,7 @@ import time
 
 # 需要根据你传入其他需要通过 gpt 解析得到的参数，如 city。
 # record 参数是必须的，无论是否使用。
+# 应使用 async
 async def auto_weather(city: str, record):
     try:
         # 进行一个 API 请求
