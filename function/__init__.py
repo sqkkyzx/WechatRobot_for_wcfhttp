@@ -65,7 +65,7 @@ async def auto(record):
         # 6-1.2 执行函数获取返回值。
         func_call = getattr(auto_factory, func_name)
         print(f"DO FUNC: {func_name} \nARGS: {func_args}")
-        func_response = func_call(**func_args)
+        func_response = await func_call(**func_args)
 
         if isinstance(func_response, (dict, list)):
             func_response = json.dumps(func_response, ensure_ascii=False)
