@@ -2,17 +2,24 @@
 
 
 基于 wcfhttp 的机器人示例。该项目仅作为示例，项目中，未对大量可能发生的错误做处理。
+集成了以下功能：
+- 消息推送队列：设置固定或随机的消息发送间隔时间
+- 相对完善的触发规则：黑名单、白名单、正则、是否被@
+- 三种触发结果：发送固定文本、执行函数、通过GPT智能选择执行函数
+
 > **⚠** 项目正在开发中，部分模块未经测试，可能有重大 BUG
 
+###
 ## 参考
 - [WeChatFerry](https://github.com/lich0821/WeChatFerry)
 - [WeChatRobot](https://github.com/lich0821/WeChatRobot)
 
-## 启动
-该程序与 `wcfhttp` 通信，用于处理 `wcfhttp` 的 callback ，不能独立运行，但是可以将本项目部署在任意 linux 服务器、docker 上，与
-运行 Wechat 的 PC 分离。
 
-先在 PC 启动 `wcfhttp` ，参数中携带本项目运行的 ip 和端口, 默认端口是 9998
+###
+## 启动
+该程序与 `wcfhttp` 通信，用于处理 `wcfhttp` 的 callback ，不能独立运行。旨在可以将本项目部署在任意 linux 服务器、docker 上，与运行 Wechat 的 PC 分离。
+
+1、先在 PC 启动 `wcfhttp` ，参数中携带本项目运行的 ip 和端口, 默认端口是 9998
 
 ```commandline
 下载 wcfhttp
@@ -22,7 +29,7 @@ python -m pip install wcfhttp
 wcfhttp -cb http://127.0.0.1:9998/
 ```
 
-拉取本项目，安装依赖，在 `config.json` 中配置 `wcfhttpURL` 为 `wcfhttp` 运行的 ip 和端口地址。
+2、拉取本项目，安装依赖，在 `config.json` 中配置 `wcfhttpURL` 为 `wcfhttp` 运行的 ip 和端口地址。
 
 
 ```commandline
@@ -32,7 +39,7 @@ python -m pip install -r requirements.txt
 启动
 python main.py
 ```
-
+###
 ## 配置文件
 
 ```python
@@ -47,12 +54,12 @@ python main.py
   # GPT 的上下文超时时间，单位秒。超过此时间后，将会删除数据库中存储的上下文。
   "histroyTimeout": 360000,
   
-  #GPT的 apikey
+  # GPT 的 apikey
   "openaiKey": "",
 }
 ```
 
-
+###
 ## 实现自己的回复逻辑
 
 
@@ -99,7 +106,8 @@ python main.py
 
 ### 2. 添加函数
 
-示例：添加一个函数，回复自己发送的内容。
+- 示例：添加一个函数，回复自己发送的内容。
+
 
 在 `function` 模块文件夹中，添加 `repeater.py` 文件
 ```python
@@ -115,7 +123,7 @@ async def repeater(record):
         
     return 
 ```
-然后需要在 `__init__.py` 中引入函数。
+然后需要在 `function/__init__.py` 中引入函数。
 ```python
 # 在开头引入函数
 from repeater.py import repeater
@@ -124,39 +132,42 @@ from repeater.py import repeater
 现在，你在 `tigger.json` 中，`func_name` 字段填写的 `repeater` 函数就可以被正确执行了。
 
 
+###
+## 使用内置队列
+队列读取 `config.json` 中的 `queueTimer` 字段作为固定间隔秒数，`queueTimerRandom` 字段作为随机增加的时间间隔。可以将 `queueTimerRandom` 设置为 `[0, 0]` 以使用固定的时间。
 
-## 内置队列的使用
-内置队列读取 `config.json` 中的 `queueTimer` 字段作为固定间隔秒数，`queueTimerRandom` 字段作为随机增加的时间间隔。
-
-可以将 `queueTimerRandom` 设置为 `[0, 0]` 以使用固定的时间。
-
-内置队列使用上下文进行数据库连接的管理，提供以下方法:
 ```python
 from sendqueue import QueueDB
 
+# 内置队列使用上下文进行数据库连接的管理，提供以下方法供调用
 with QueueDB() as mq:
-    mq.send_text()
-    mq.send_text()
-    mq.send_image()
-    mq.send_file()
-    mq.send_image()
+    mq.send_text()  # 发送文本
+    mq.send_xml()  # 发送XML
+    mq.send_image()  # 发送图片
+    mq.send_file()  # 发送文件
+    mq.send_emotion()  # 发送动态表情
+    mq.send_webview()   # 发送网页链接
+    mq.send_refer()     # 发送引用消息
 ```
 
 
-
+###
 ## gpt-3.5-turbo-0613 自动选择函数
 
 > **⚠** 使用 AUTO 模式需要能够请求 gpt-3.5-turbo-0613 的 apikey
 
 ### 1. 如何启用
 
-设置 `tigger.json` 的 `func_name` 设置为 `auto`
+- 设置 `tigger.json` 的 `func_name` 设置为 `auto`
 
-在 `config.json` 中设置你的 `openaiKey`
+- 在 `config.json` 中设置你的 `openaiKey`
 
-### 2. 定义自己的函数逻辑
+- 已内置一个 `nowtime` 和一个 `weather` 函数，可自行查看其实现。
 
-添加一个新的文件 `weather.py`
+
+### 2. 编写自己的函数逻辑
+
+以 `weather` 为例。添加一个新的文件 `function/weather.py`
 
 ```python
 import requests
@@ -188,7 +199,8 @@ async def auto_weather(city: str, record):
         return '...' + e.__str__()[-80:]
 ```
 
-编辑 `auto_factory.py` ，在顶部引入备选函数。 
+### 3. 引入自己的函数
+在 `function/auto_factory.py` 引入函数。 
 
 ```python
 # 在引入函数时，建议使用 `as` 重命名函数名称，说明函数具体的功能，并符合良好的蛇形或驼峰命名规则。
@@ -197,7 +209,9 @@ async def auto_weather(city: str, record):
 from function.weather import auto_weather as query_weacher
 ```
 
-编辑 `auto_factory.py` 的 `functions` 变量。该变量是提供给 gpt 的可用函数列表。
+### 4. 给GPT备选函数列表新增可用项
+
+编辑 `function/auto_factory.py` 的 `functions` 变量。该变量是提供给 gpt 的可用函数列表。
 
 ```python
 # 应该是一个列表
